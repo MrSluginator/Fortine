@@ -1,0 +1,44 @@
+[gd_scene load_steps=7 format=3 uid="uid://ci6rsyhr4m2w4"]
+
+[ext_resource type="Script" path="res://scenes/player.gd" id="1_68e0v"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_qjmdn"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_mo1y7"]
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_hygf1"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_n4v6w"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_03qu2"]
+albedo_color = Color(0.641813, 0.382937, 0.387644, 1)
+
+[node name="Main" type="Node3D"]
+
+[node name="CharacterBody3D" type="CharacterBody3D" parent="."]
+script = ExtResource("1_68e0v")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CharacterBody3D"]
+shape = SubResource("BoxShape3D_qjmdn")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CharacterBody3D"]
+mesh = SubResource("BoxMesh_mo1y7")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+shape = SubResource("WorldBoundaryShape3D_hygf1")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D"]
+mesh = SubResource("PlaneMesh_n4v6w")
+surface_material_override/0 = SubResource("StandardMaterial3D_03qu2")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 11.5632, 22.3873)
+projection = 1
+current = true
+size = 32.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.943212, -0.19742, 0.267162, 0.0513234, 0.881192, 0.469964, -0.328202, -0.429564, 0.841284, 0, 1.16365, 0)
