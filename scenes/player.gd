@@ -45,6 +45,11 @@ func _physics_process(delta: float) -> void:
 	$InteractRay.target_position = direction
 	
 	move_and_slide()
+	if pow(velocity.x, 2) + pow(velocity.z, 2) < 0.1:
+		position.x = roundf(position.x)
+		position.z = roundf(position.z)
+		velocity = velocity * Vector3(0, 1, 0)
+
 
 
 func move():
@@ -64,4 +69,4 @@ func jump():
 			tween.tween_callback(done_move)
 
 func done_move():
-	moving = false
+	velocity = Vector3.ZERO
