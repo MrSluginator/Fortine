@@ -4,10 +4,12 @@ extends CharacterBody3D
 const SPEED = 5.0
 const JUMP_VELOCITY = 8.5
 const TILE_SIZE = 2
-const STRENGTH = 400.0
+const STRENGTH = 500.0
 
-var moving = false
-var direction = Vector3.ZERO
+@export var dash_timer:Timer
+
+var locked = false
+var direction = Vector3.FORWARD
 
 func _physics_process(delta: float) -> void:
 	# Add the gravity.
@@ -18,12 +20,25 @@ func _physics_process(delta: float) -> void:
 		var collider:Node3D = $InteractRay.get_collider()
 		if collider is RigidBody3D:
 			collider.apply_force(direction * STRENGTH)
-			print(collider.linear_velocity)
+			collider.health.hurt(1)
+	
+	if Input.is_action_just_pressed("dash") and not locked:
+		velocity += direction * SPEED * 3
+		dash_timer.start()
+		lock_actions()
+	
+	if Input.is_action_just_pressed("grab") and $InteractRay.is_colliding():
+		var collider:Node3D = $InteractRay.get_collider()
+		if collider is RigidBody3D:
+			collider.apply_torque(Vector3.UP)
+			collider.apply_force((-direction + Vector3.UP) * STRENGTH)
+			collider.look_at(position)
+			collider.health.hurt(1)
 	
 	# Handle jump.
 	if Input.is_action_just_pressed("ui_accept") and is_on_floor():
 		velocity.y = JUMP_VELOCITY
-
+	
 	if Input.is_action_just_pressed("down-left"):
 		direction = Vector3(0, 0, 1)
 	elif Input.is_action_just_pressed("down-right"):
@@ -37,36 +52,18 @@ func _physics_process(delta: float) -> void:
 	var input_dir := Input.get_vector("up-left", "down-right", "up-right", "down-left")
 	if (input_dir.length() == 1):
 		direction = Vector3(input_dir.x, 0, input_dir.y)
-	if(not input_dir):
-		velocity = Vector3(0, velocity.y, 0)
-	else:
-		velocity = Vector3(0, velocity.y, 0) + direction * SPEED
+	if (not locked):
+		if(not input_dir):
+			velocity = Vector3(0, velocity.y, 0)
+		else:
+			velocity = Vector3(0, velocity.y, 0) + direction * SPEED
 	
-	$InteractRay.target_position = direction
+	$InteractRay.target_position = direction * 2
 	
 	move_and_slide()
-	if pow(velocity.x, 2) + pow(velocity.z, 2) < 0.1:
-		position.x = roundf(position.x)
-		position.z = roundf(position.z)
-		velocity = velocity * Vector3(0, 1, 0)
 
+func lock_actions():
+	locked = true
 
-
-func move():
-	if direction:
-		if moving == false:
-			moving = true
-			var tween = create_tween()
-			tween.tween_property(self, "position.y", 0, 0)
-			tween.tween_property(self, "position", position + direction * TILE_SIZE, 0.35)
-			tween.tween_callback(done_move)
-
-func jump():
-	if moving == false:
-			moving = true
-			var tween = create_tween()
-			tween.tween_property(self, "position", position + Vector3.UP * TILE_SIZE, 0.1)
-			tween.tween_callback(done_move)
-
-func done_move():
-	velocity = Vector3.ZERO
+func unlock_actions():
+	locked = false

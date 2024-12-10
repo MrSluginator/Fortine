@@ -1,7 +1,8 @@
-[gd_scene load_steps=11 format=3 uid="uid://ci6rsyhr4m2w4"]
+[gd_scene load_steps=12 format=3 uid="uid://ci6rsyhr4m2w4"]
 
 [ext_resource type="Script" path="res://scenes/player.gd" id="1_68e0v"]
 [ext_resource type="Script" path="res://scenes/rock.gd" id="2_0bmsb"]
+[ext_resource type="Script" path="res://scenes/health.gd" id="3_oalkj"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_qjmdn"]
 
@@ -17,15 +18,16 @@ material = SubResource("StandardMaterial3D_686f3")
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_03qu2"]
 albedo_color = Color(0.641813, 0.382937, 0.387644, 1)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_pgnwi"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_q413i"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_q8o6b"]
 
 [node name="Main" type="Node3D"]
 
-[node name="CharacterBody3D" type="CharacterBody3D" parent="."]
+[node name="CharacterBody3D" type="CharacterBody3D" parent="." node_paths=PackedStringArray("dash_timer")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.66288, 0)
 script = ExtResource("1_68e0v")
+dash_timer = NodePath("DashTimer")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CharacterBody3D"]
 shape = SubResource("BoxShape3D_qjmdn")
@@ -35,6 +37,11 @@ mesh = SubResource("BoxMesh_mo1y7")
 
 [node name="InteractRay" type="RayCast3D" parent="CharacterBody3D"]
 target_position = Vector3(1, 0, 0)
+
+[node name="DashTimer" type="Timer" parent="CharacterBody3D"]
+process_callback = 0
+wait_time = 0.2
+one_shot = true
 
 [node name="Floor" type="StaticBody3D" parent="."]
 transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 0, 0)
@@ -61,13 +68,22 @@ shadow_blur = 0.01
 transform = Transform3D(0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 0, 0)
 sky_mode = 1
 
-[node name="Rock" type="RigidBody3D" parent="."]
+[node name="Rock" type="RigidBody3D" parent="." node_paths=PackedStringArray("health")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.88759, 1.23027, 3.98935)
 axis_lock_angular_z = true
+contact_monitor = true
+max_contacts_reported = 10
 script = ExtResource("2_0bmsb")
+health = NodePath("Health")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rock"]
-shape = SubResource("BoxShape3D_pgnwi")
+shape = SubResource("BoxShape3D_q413i")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Rock"]
 mesh = SubResource("BoxMesh_q8o6b")
+
+[node name="Health" type="Node" parent="Rock"]
+script = ExtResource("3_oalkj")
+
+[connection signal="timeout" from="CharacterBody3D/DashTimer" to="CharacterBody3D" method="unlock_actions"]
+[connection signal="health_depleated" from="Rock/Health" to="Rock" method="death"]
